@@ -1,6 +1,6 @@
 # gd-mods
 some small gd mods
-all mods usee [gd-mod-example](https://github.com/matcool/gd-mod-example) as a base 
+all mods use [gd-mod-example](https://github.com/matcool/gd-mod-example) as a base 
 ## Abbreviated Labels
 ![image](https://user-images.githubusercontent.com/54410739/201452654-3253210c-9d7f-4ee3-bbdd-b7320eaabadc.png)
 
