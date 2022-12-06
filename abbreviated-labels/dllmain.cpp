@@ -64,14 +64,48 @@ std::string intToFormatString(int n, float& scaleMult) {
 	return str += sufix ;
 }
 
-/*
-//TODO: click on the label to change between abbreviated and long string
 
-struct CallBacks {
+struct ScaleParams : public CCObject {
 	
-	void onLabel(CCLabelBMFont* label)
+	float oldScale;
+	float newscale;
+	
+	ScaleParams(float o, float n) : oldScale(o), newscale(n) {
+		this->autorelease();
+	}
+
 };
-*/
+
+struct Callbacks {
+	
+	bool isNumber(const char* str)
+	{
+		std::string s(str);
+		return !s.empty() && std::find_if(s.begin(), s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+	}
+
+	void onLabel(CCNode* sender)
+	{
+		auto label = (CCLabelBMFont*)sender->getChildren()->objectAtIndex(0);
+		int n = sender->getTag();
+		auto scales = static_cast<ScaleParams*>(sender->getUserObject());
+		
+		auto labelstr = label->getString();
+		if(isNumber(labelstr))
+		{
+			float scaleMult = 1.0f;
+			label->CCLabelBMFont::setString(intToFormatString(n, scaleMult).c_str());
+			label->setScale(scales->newscale);
+		}
+		else
+		{
+			label->CCLabelBMFont::setString(std::to_string(n).c_str());
+			label->setScale(scales->oldScale);
+		}
+	}
+};
+
+
 
 void (__thiscall* LevelCell_loadCustomLevelCell)(CCLayer* self);
 void __fastcall LevelCell_loadCustomLevelCellH(CCLayer* self, void*) {
@@ -103,17 +137,43 @@ void __fastcall LevelCell_loadCustomLevelCellH(CCLayer* self, void*) {
 			if(checkDownload && atoi(label->CCLabelBMFont::getString()) == downloads)
 			{
 				float scaleMult = 1.0f;
-				label->CCLabelBMFont::setString(intToFormatString(downloads, scaleMult).c_str());
-				label->setScale(label->getScale() * scaleMult);
-				label->setTag(downloads);
+				auto newspr = CCLabelBMFont::create(intToFormatString(downloads, scaleMult).c_str(), "bigFont.fnt");
+				float oldScale = label->getScale();
+				float newscale = oldScale * scaleMult;
+				newspr->setScale(newscale);
+
+				auto btn = gd::CCMenuItemSpriteExtra::create(newspr, self, menu_selector(Callbacks::onLabel));
+				btn->setTag(downloads);
+				btn->setUserObject(new ScaleParams(oldScale, newscale));
+				
+				auto menu = CCMenu::create();
+				menu->setPosition(label->getPosition());
+				menu->setPositionX(menu->getPositionX() + 20);
+				menu->addChild(btn);
+				self->addChild(menu);
+				label->setVisible(false);
+				
 				continue;
 			}
 			else if(checkLikes && atoi(label->CCLabelBMFont::getString()) == likes)
 			{
 				float scaleMult = 1.0f;
-				label->CCLabelBMFont::setString(intToFormatString(likes, scaleMult).c_str());
-				label->setScale(label->getScale() * scaleMult);
-				label->setTag(likes);
+				auto newspr = CCLabelBMFont::create(intToFormatString(likes, scaleMult).c_str(), "bigFont.fnt");
+				float oldScale = label->getScale();
+				float newscale = oldScale * scaleMult;
+				newspr->setScale(newscale);
+
+				auto btn = gd::CCMenuItemSpriteExtra::create(newspr, self, menu_selector(Callbacks::onLabel));
+				btn->setTag(likes);
+				btn->setUserObject(new ScaleParams(oldScale, newscale));
+				
+				auto menu = CCMenu::create();
+				menu->setPosition(label->getPosition());
+				menu->setPositionX(menu->getPositionX() + 20);
+				menu->addChild(btn);
+				self->addChild(menu);
+				label->setVisible(false);
+				
 			}
 		}
 	}
